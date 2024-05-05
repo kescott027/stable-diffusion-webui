@@ -13,7 +13,11 @@ import ldm.modules.midas as midas
 
 from ldm.util import instantiate_from_config
 
-from modules import paths, shared, modelloader, devices, script_callbacks, sd_vae, sd_disable_initialization, errors, hashes, sd_models_config, sd_unet, sd_models_xl, cache, extra_networks, processing, lowvram, sd_hijack, patches
+from modules import (
+    paths, shared, modelloader, devices, script_callbacks, sd_vae, sd_disable_initialization, errors, hashes,
+    sd_models_config, sd_unet, sd_models_xl, cache, extra_networks, processing, lowvram, sd_hijack, patches
+)
+
 from modules.timer import Timer
 from modules.shared import opts
 import tomesd
@@ -109,7 +113,12 @@ class CheckpointInfo:
         self.shorthash = shorthash
 
         if self.shorthash not in self.ids:
-            self.ids += [self.shorthash, self.sha256, f'{self.name} [{self.shorthash}]', f'{self.name_for_extra} [{self.shorthash}]']
+            self.ids += [self.shorthash,
+                         self.sha256,
+                         f'{self.name} '
+                         f'[{self.shorthash}]',
+                         f'{self.name_for_extra} [{self.shorthash}]'
+                         ]
 
         old_title = self.title
         self.title = f'{self.name} [{self.shorthash}]'
