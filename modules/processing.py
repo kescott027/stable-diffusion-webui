@@ -16,7 +16,9 @@ from skimage import exposure
 from typing import Any
 
 import modules.sd_hijack
-from modules import devices, prompt_parser, masking, sd_samplers, lowvram, infotext_utils, extra_networks, sd_vae_approx, scripts, sd_samplers_common, sd_unet, errors, rng
+from modules import (
+    devices, prompt_parser, masking, sd_samplers, lowvram, infotext_utils, extra_networks, sd_vae_approx, scripts,
+    sd_samplers_common, sd_unet, errors, rng)
 from modules.rng import slerp # noqa: F401
 from modules.sd_hijack import model_hijack
 from modules.sd_samplers_common import images_tensor_to_samples, decode_first_stage, approximation_indexes
@@ -166,7 +168,7 @@ class StableDiffusionProcessing:
     overlay_images: list = None
     eta: float = None
     do_not_reload_embeddings: bool = False
-    denoising_strength: float = None
+    denoising_strength: float = 0.25
     ddim_discretize: str = None
     s_min_uncond: float = None
     s_churn: float = None
@@ -918,7 +920,12 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
             sd_models.apply_alpha_schedule_override(p.sd_model, p)
 
             with devices.without_autocast() if devices.unet_needs_upcast else devices.autocast():
-                samples_ddim = p.sample(conditioning=p.c, unconditional_conditioning=p.uc, seeds=p.seeds, subseeds=p.subseeds, subseed_strength=p.subseed_strength, prompts=p.prompts)
+                samples_ddim = p.sample(conditioning=p.c,
+                                        unconditional_conditioning=p.uc,
+                                        seeds=p.seeds,
+                                        subseeds=p.subseeds,
+                                        subseed_strength=p.subseed_strength,
+                                        prompts=p.prompts)
 
             if p.scripts is not None:
                 ps = scripts.PostSampleArgs(samples_ddim)
