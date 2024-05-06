@@ -15,6 +15,7 @@ import sys
 import os
 import importlib.util
 
+
 def module_from_file(module_name, file_path):
     spec = importlib.util.spec_from_file_location(module_name, file_path)
     module = importlib.util.module_from_spec(spec)
@@ -50,6 +51,7 @@ class Script(scripts.Script):
             foregen_iter        = gr.Slider(minimum=1, maximum=10, step=1, label='Number of foreground images  ', value=5)
             foregen_steps       = gr.Slider(minimum=1, maximum=120, step=1, label='foreground steps  ', value=24)
             foregen_cfg_scale   = gr.Slider(minimum=1, maximum=30, step=0.1, label='foreground cfg scale  ', value=12.5)
+            foregen_denoise_str = gr.Slider(minimum=0, maximum=1, steps=0.1, label='foreground denoise strength (hi res) ', Value=0.23)
             foregen_seed_shift  = gr.Slider(minimum=0, maximum=1000, step=1, label='foreground new seed+  ', value=1000)
             foregen_custom_seed = gr.Textbox(label="Foreground seeds (optional)  ", lines=5, max_lines=2000)
             foregen_sampler     = gr.Dropdown(label="foreground sampler", choices=txt2img_samplers_names, value="DDIM")
@@ -85,6 +87,7 @@ class Script(scripts.Script):
                     foregen_iter,
                     foregen_steps,
                     foregen_cfg_scale,
+                    foregen_denoise_str,
                     foregen_seed_shift,
                     foregen_custom_seed,
                     foregen_sampler,
@@ -117,6 +120,7 @@ class Script(scripts.Script):
                     foregen_iter,
                     foregen_steps,
                     foregen_cfg_scale,
+                    foregen_denoise_str,
                     foregen_seed_shift,
                     foregen_custom_seed,
                     foregen_sampler,
@@ -144,6 +148,7 @@ class Script(scripts.Script):
         initial_CLIP = opts.data["CLIP_stop_at_last_layers"]
         sdmg = module_from_file("simple_depthmap",'extensions/multi-subject-render/scripts/simple_depthmap.py')
         sdmg = sdmg.SimpleDepthMapGenerator(foregen_midas_model) #import midas
+        p.denoising_strength = p.denoising_strength if p.denoising_strength else foregen_denoise_str
 
         def cut_depth_mask(img,mask_img,foregen_treshold):
             img = img.convert("RGBA")
@@ -225,6 +230,7 @@ class Script(scripts.Script):
             foregen_prompts = foregen_prompt.splitlines()
             foregen_custom_seeds = foregen_custom_seed.splitlines()
             foregrounds = []
+            denoising_strength = p.denoising_strength
             if foregen_clip > 0:
                 opts.data["CLIP_stop_at_last_layers"] = foregen_clip
             for i in range(foregen_iter):
@@ -241,7 +247,7 @@ class Script(scripts.Script):
                 p.sampler_name = foregen_sampler
                 p.width     = foregen_size_x
                 p.height    = foregen_size_y
-                p.denoising_strength  = None
+                p.denoising_strength = denoising_strength
 
                 proc = process_images(p)
                 foregrounds.append(proc.images[0])
