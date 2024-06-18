@@ -74,9 +74,12 @@ class UserMetadataEditor:
         preview_url = item.get("preview", None)
 
         if not preview_url:
-            filename, _ = os.path.splitext(item["filename"])
-            preview_url = self.page.find_preview(filename)
-            item["preview"] = preview_url
+            try:
+                filename, _ = os.path.splitext(item["filename"])
+                preview_url = self.page.find_preview(filename)
+                item["preview"] = preview_url
+            except Exception as e:
+                errors.display(e, f"reading metadata info for {name} ", e)
 
         if preview_url:
             preview = f'''
